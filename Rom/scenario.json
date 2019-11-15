@@ -11,17 +11,9 @@
         "op": "equal",
         "reference": -1
       },
-      "timerHundred": {
+      "totalTimer": {
         "op": "equal",
-        "reference": -1
-      },
-      "timerOne": {
-        "op": "equal",
-        "reference": -1
-      },
-      "timerTens": {
-        "op": "equal",
-        "reference": -1
+        "reference": 0
       }
     }
   },

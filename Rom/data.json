@@ -23,6 +23,10 @@
     "timerTens": {
       "address": 8261427,
       "type": "<u1"
+    },
+    "totalTimer": {
+      "address": 8261425,
+      "type": "<u3"
     }
   }
 }
