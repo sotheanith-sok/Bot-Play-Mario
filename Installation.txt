@@ -9,6 +9,7 @@
 3. Install dependencies
     conda install python=3.7
     conda install pylint
+    conda install black
 
     //If you have Nvidia GPU (Pick this one)
     conda install tensorflow-gpu
@@ -21,4 +22,6 @@
 4. Import ROM
     python -m retro.import ./Rom
 
+5. Test OpenGym-retro
+    python .\testOpenGym.py
         
