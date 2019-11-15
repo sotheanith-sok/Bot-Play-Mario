@@ -1,0 +1,35 @@
+{
+  "crop": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "done": {
+    "variables": {
+      "lives": {
+        "op": "equal",
+        "reference": -1
+      },
+      "timerHundred": {
+        "op": "equal",
+        "reference": -1
+      },
+      "timerOne": {
+        "op": "equal",
+        "reference": -1
+      },
+      "timerTens": {
+        "op": "equal",
+        "reference": -1
+      }
+    }
+  },
+  "reward": {
+    "variables": {
+      "score": {
+        "reward": 10.0
+      }
+    }
+  }
+}

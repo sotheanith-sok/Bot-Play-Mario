@@ -1,0 +1,28 @@
+{
+  "info": {
+    "coins": {
+      "address": 8261055,
+      "type": "|u1"
+    },
+    "lives": {
+      "address": 8261054,
+      "type": "|i1"
+    },
+    "score": {
+      "address": 8261428,
+      "type": "<u4"
+    },
+    "timerHundred": {
+      "address": 8261425,
+      "type": "<u1"
+    },
+    "timerOne": {
+      "address": 8261426,
+      "type": "<u1"
+    },
+    "timerTens": {
+      "address": 8261427,
+      "type": "<u1"
+    }
+  }
+}
