@@ -1,16 +1,18 @@
 import numpy as np
 
+
 class ReplayBuffer(object):
     def __init__(self, max_size, input_shape, n_actions, discrete=False):
         # Prevent overusage of memory
         self.memory_size = max_size
         self.memory_counter = 0
+
         # Check if input is continue or discrete values
         self.discrete = discrete
-        self.states_memory = np.zeros((self.memory_size, input_shape))
-        self.new_states_memory = np.zeros((self.memory_size, input_shape))
+        self.states_memory = np.zeros(((self.memory_size,) + input_shape))
+        self.new_states_memory = np.zeros(((self.memory_size,) + input_shape))
         dtype = np.int8 if self.discrete else np.float
-        self.actions_memory = np.zeros((self.memory_size, n_actions), dtype=dtype)
+        self.actions_memory = np.zeros(((self.memory_size,) + (n_actions,)), dtype=dtype)
         self.rewards_memory = np.zeros(self.memory_size)
         self.terminals_memory = np.zeros(self.memory_size, dtype=np.float)
 
@@ -36,4 +38,3 @@ class ReplayBuffer(object):
         actions = self.actions_memory[batch]
         terminals = self.terminals_memory[batch]
         return states, actions, rewards, new_states, terminals
-
