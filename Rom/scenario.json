@@ -9,11 +9,7 @@
     "variables": {
       "lives": {
         "op": "equal",
-        "reference": -1
-      },
-      "totalTimer": {
-        "op": "equal",
-        "reference": 0
+        "reference": 3
       }
     }
   },
