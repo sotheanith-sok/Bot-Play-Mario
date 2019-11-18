@@ -1,10 +1,11 @@
 from ReplayBuffer import ReplayBuffer
 from models import build_model
 from tensorflow.keras import models
+from os import path
 import numpy as np
 
 class DDQAgent(object):
-    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, input_dimension, epsilon_dec=0.99, epsilon_min = 0.01, memory_size = 1000, filename= "myModel.h5",replace_target = 100):
+    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, input_dimension, epsilon_dec=0.9999, epsilon_min = 0.01, memory_size = 1000, filename= "DDQ_Model.h5",replace_target = 100):
         self.n_actions = n_actions
         self.actions_space = [i for i in range(self.n_actions)]
         self.gamma = gamma
@@ -19,6 +20,7 @@ class DDQAgent(object):
         self.q_target = build_model(0.01,n_actions,input_dimension)
     
     def remember(self, state, action, reward, new_state, done):
+        action = self.encode_game_input(action)
         action = self.game_input_to_integers(np.array([action]))[0]
         self.memory.store_trainsition(state,action,reward,new_state,done)
     
@@ -30,7 +32,7 @@ class DDQAgent(object):
         else:
             actions= self.q_evaluation.predict(state)
             action = np.argmax(actions)
-        return self.integers_to_game_input(np.array([action]))[0]
+        return self.decode_game_input(self.integers_to_game_input(np.array([action]))[0])
     
     def learn(self):
         if self.memory.memory_counter>self.batch_size:
@@ -62,14 +64,32 @@ class DDQAgent(object):
 
     def save_model(self):
         self.q_evaluation.save(self.filename)
-    def load_model(self):
-        self.q_evaluation = models.load_model(self.filename)
 
-        if self.epsilon<=self.epsilon_min:
-            self.update_network_params()
+    def load_model(self):
+        if path.exists(self.filename):
+            print(1)
+            self.q_evaluation = models.load_model(self.filename)
+            if self.epsilon<=self.epsilon_min:
+                self.update_network_params()
+        
 
     def game_input_to_integers(self,values):
         return values.dot(1 << np.arange(values.shape[-1]))
 
     def integers_to_game_input(self,values, bits_length=12):
         return (((values[:, None] & (1 << np.arange(bits_length)))) > 0).astype(int)
+
+
+    def encode_game_input(self, value):
+        raw_input = np.array(value, dtype=np.int8)
+        encoded_input = np.zeros((8), dtype=np.int8)
+        encoded_input[0:2] = raw_input[0:2]
+        encoded_input[2:8] = raw_input[4:10]
+        return encoded_input
+
+    def decode_game_input(self, value):
+        encoded_input = np.array(value, dtype=np.int8)
+        raw_input = np.zeros((12), dtype=np.int8)
+        raw_input[0:2] = encoded_input[0:2]
+        raw_input[4:10] = encoded_input[2:8]
+        return raw_input
