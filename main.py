@@ -4,7 +4,7 @@ import numpy as np
 from DDQAgent import DDQAgent
 
 # Build game enviroment
-env = retro.make(game="SuperMarioWorld-Snes", state="Forest1")
+env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
 
 # Recoder video for every 10 episodes
 env = Monitor(env, './video', force=True, video_callable=lambda episode_id: episode_id%10==0)
@@ -53,7 +53,7 @@ for i in range(n_games):
         new_oberservation = new_oberservation / 255.0
         score += reward
         oberservation = new_oberservation
-        
+
         # Agent only remember 1 frame for every 10 frame
         if frame_counter % remeberEvery == 0:
             agent.remember(oberservation, action, reward, new_oberservation, done)

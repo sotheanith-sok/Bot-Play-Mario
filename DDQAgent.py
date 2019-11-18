@@ -5,7 +5,7 @@ from os import path
 import numpy as np
 
 class DDQAgent(object):
-    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, input_dimension, epsilon_dec=0.9999, epsilon_min = 0.01, memory_size = 1000, filename= "DDQ_Model.h5",replace_target = 100):
+    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, input_dimension, epsilon_dec=0.999, epsilon_min = 0.01, memory_size = 1000, filename= "DDQ_Model.h5",replace_target = 100):
         """Initialize Double Deep Q Agent
         
         Arguments:
@@ -137,7 +137,6 @@ class DDQAgent(object):
         """Load evaluation model. Update target model if epsilon is 0
         """
         if path.exists(self.filename):
-            print(1)
             self.q_evaluation = models.load_model(self.filename)
             if self.epsilon<=self.epsilon_min:
                 self.update_network_params()
