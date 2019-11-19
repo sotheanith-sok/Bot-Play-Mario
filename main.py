@@ -16,13 +16,13 @@ n_games = 5000
 # Initialize double deep q agent
 agent = DDQAgent(
     alpha=0.005,       # Learning Rate
-    gamma=0.998,         # Discount factor. Make future event weighted less
-    n_actions=256,      # Number of possible actions. 2^8 for 8 inputs
+    gamma=0.999,         # Discount factor. Make future event weighted less
+    n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.998,  #How fast should start perform greedy action
+    epsilon_dec=0.9999,  #How fast should start perform greedy action
     batch_size=64,      # How many samples should this agent train on
     input_dimension=(56, 64, 3),  # Input dimension.
-    memory_size=10000,   # Max capacity of ReplayBuffer
+    memory_size=5000,   # Max capacity of ReplayBuffer
 )
 
 #Load agent
@@ -32,9 +32,9 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 60         #Keep track of how many frame between each time agent learn
-rememberEvery = 30       #How many frame between each time agent remember
-frame_skip=30            #Only getting new action every 5 frame
+learnEvery = 30         #Keep track of how many frame between each time agent learn
+rememberEvery = 5       #How many frame between each time agent remember
+frame_skip=5            #Only getting new action every 5 frame
 
 #Start playing
 for i in range(n_games):
@@ -52,7 +52,6 @@ for i in range(n_games):
 
         # Time Step
         new_oberservation, reward, done, _ = env.step(action)
-
         #Scale rgb to between 0 and 1 and resize frame
         new_oberservation = cv2.resize(new_oberservation / 255.0,(64,56))
         score += reward

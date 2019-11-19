@@ -17,6 +17,12 @@
     "variables": {
       "score": {
         "reward": 10.0
+      },
+      "x_position": {
+        "reward": 0.001
+      },
+      "x_speed": {
+        "reward": 0.01
       }
     }
   }

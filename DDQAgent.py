@@ -61,7 +61,6 @@ class DDQAgent(object):
             done {bool} -- [Is the episode complete?]
         """
         action = self.encode_game_input(action)
-        action = self.bits_to_integers(np.array([action]))[0]
         self.memory.store_trainsition(state, action, reward, new_state, done)
 
     def choose_action(self, state):
@@ -79,13 +78,13 @@ class DDQAgent(object):
         # Exploration
         if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-            
+
         # Greedy choice
         else:
             actions = self.q_evaluation.predict(state)
             action = np.argmax(actions)
 
-        return self.decode_game_input(self.integers_to_bits(np.array([action]))[0])
+        return self.decode_game_input(action)
 
     def learn(self):
         """Update weights of q models
@@ -127,7 +126,7 @@ class DDQAgent(object):
             )
 
             # Train evaluation model to fit states to q_target
-            self.q_evaluation.fit(states, q_target, verbose=0)
+            self.q_evaluation.fit(states, q_target, verbose=0, epochs=5)
 
             # Update epsilon
             self.epsilon = (
@@ -187,17 +186,44 @@ class DDQAgent(object):
     def encode_game_input(self, value):
         """Compress game_input to smaller array to remove unneccessary input
         """
+        # raw_input = np.array(value, dtype=np.int8)
+        # encoded_input = np.zeros((8), dtype=np.int8)
+        # encoded_input[0:2] = raw_input[0:2]
+        # encoded_input[2:8] = raw_input[4:10]
+        # return encoded_input
+
         raw_input = np.array(value, dtype=np.int8)
-        encoded_input = np.zeros((8), dtype=np.int8)
-        encoded_input[0:2] = raw_input[0:2]
-        encoded_input[2:8] = raw_input[4:10]
-        return encoded_input
+        if np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+            return 0  # Doing nothing
+        elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]):
+            return 1  # Run right
+        elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]):
+            return 2  # Run left
+        elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]):
+            return 3  # down
+        elif np.array_equal(raw_input, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+            return 4  # Jump
+        elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]):
+            return 5  # Spin Jump
 
     def decode_game_input(self, value):
         """Decompress input back to its original form
         """
-        encoded_input = np.array(value, dtype=np.int8)
-        raw_input = np.zeros((12), dtype=np.int8)
-        raw_input[0:2] = encoded_input[0:2]
-        raw_input[4:10] = encoded_input[2:8]
-        return raw_input
+        # encoded_input = np.array(value, dtype=np.int8)
+        # raw_input = np.zeros((12), dtype=np.int8)
+        # raw_input[0:2] = encoded_input[0:2]
+        # raw_input[4:10] = encoded_input[2:8]
+        # return raw_input
+        if value == 0:
+            return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        elif value == 1:
+            return [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+        elif value == 2:
+            return [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        elif value == 3:
+            return [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+        elif value == 4:
+            return [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        elif value == 5:
+            return [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+

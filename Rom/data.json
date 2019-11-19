@@ -27,6 +27,14 @@
     "totalTimer": {
       "address": 8261425,
       "type": "<u3"
+    },
+    "x_position": {
+      "address": 8257745,
+      "type": "<i2"
+    },
+    "x_speed": {
+      "address": 8257659,
+      "type": "<i1"
     }
   }
 }
