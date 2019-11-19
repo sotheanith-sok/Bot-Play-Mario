@@ -15,11 +15,11 @@ n_games = 5000
 
 # Initialize double deep q agent
 agent = DDQAgent(
-    alpha=0.005,       # Learning Rate
+    alpha=0.0001,       # Learning Rate
     gamma=0.999,         # Discount factor. Make future event weighted less
     n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.999,  #How fast should start perform greedy action
+    epsilon_dec=0.9999,  #How fast should start perform greedy action
     batch_size=100,      # How many samples should this agent train on
     input_dimension=(56, 64, 3),  # Input dimension.
     memory_size=5000,   # Max capacity of ReplayBuffer
