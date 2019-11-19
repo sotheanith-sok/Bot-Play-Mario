@@ -78,7 +78,8 @@ class DDQAgent(object):
         # Exploration
         if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-
+            if np.random.random_sample()>0.5:
+                action = 1
         # Greedy choice
         else:
             actions = self.q_evaluation.predict(state)
