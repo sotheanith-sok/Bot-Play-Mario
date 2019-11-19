@@ -1,6 +1,7 @@
 import retro
 from gym.wrappers import Monitor
 import numpy as np
+import cv2
 from DDQAgent import DDQAgent
 
 # Build game enviroment
@@ -14,13 +15,13 @@ n_games = 5000
 
 # Initialize double deep q agent
 agent = DDQAgent(
-    alpha=0.0005,       # Learning Rate
+    alpha=0.005,       # Learning Rate
     gamma=0.99,         # Discount factor. Make future event weighted less
     n_actions=256,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
     batch_size=64,      # How many samples should this agent train on
-    input_dimension=(224, 256, 3),  # Input dimension.
-    memory_size=1000,   # Max capacity of ReplayBuffer
+    input_dimension=(56, 64, 3),  # Input dimension.
+    memory_size=100000,   # Max capacity of ReplayBuffer
 )
 
 #Load agent
@@ -31,37 +32,41 @@ scores = []
 
 #Some variable
 renderAtEpisode = 10    #At which episode should game be render
-learnEvery = 300        #Keep track of how many frame between each time agent learn
-remeberEvery = 10       #How many frame between each time agent remember
+learnEvery = 60         #Keep track of how many frame between each time agent learn
+rememberEvery = 5       #How many frame between each time agent remember
+frame_skip=5            #Only getting new action every 5 frame
 
 #Start playing
 for i in range(n_games):
 
     done = False 
     score = 0
-    oberservation = env.reset() / 255.0 #Scale rgb to between 0 and 1
+    oberservation = cv2.resize(env.reset() / 255.0,(64,56)) #Scale rgb to between 0 and 1 and resize frame
     frame_counter = 0
 
+    # action = agent.choose_action(oberservation)
     while not done:
-        # Render only at target episode
-        # if i % renderAtEpisode == 0:
-        #     env.render()
+        #Get new actions per skip
+        if frame_counter%frame_skip==0:
+            action = agent.choose_action(oberservation)
 
         # Time Step
-        action = agent.choose_action(oberservation)
         new_oberservation, reward, done, _ = env.step(action)
-        new_oberservation = new_oberservation / 255.0
-        score += reward
-        oberservation = new_oberservation
 
+        #Scale rgb to between 0 and 1 and resize frame
+        new_oberservation = cv2.resize(new_oberservation / 255.0,(64,56))
+        score += reward
+
+        
         # Agent only remember 1 frame for every 10 frame
-        if frame_counter % remeberEvery == 0:
+        if frame_counter % rememberEvery == 0:
             agent.remember(oberservation, action, reward, new_oberservation, done)
 
+        oberservation = new_oberservation
         # Agent will learn every 300 frame
         if frame_counter % learnEvery == 0:
             agent.learn()
-
+        
         frame_counter+=1
     
     scores.append(score)

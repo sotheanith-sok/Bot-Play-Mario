@@ -4,8 +4,22 @@ from tensorflow.keras import models
 from os import path
 import numpy as np
 
+
 class DDQAgent(object):
-    def __init__(self, alpha, gamma, n_actions, epsilon, batch_size, input_dimension, epsilon_dec=0.999, epsilon_min = 0.01, memory_size = 1000, filename= "DDQ_Model.h5",replace_target = 100):
+    def __init__(
+        self,
+        alpha,
+        gamma,
+        n_actions,
+        epsilon,
+        batch_size,
+        input_dimension,
+        epsilon_dec=0.9999,
+        epsilon_min=0.01,
+        memory_size=1000,
+        filename="DDQ_Model.h5",
+        replace_target=100,
+    ):
         """Initialize Double Deep Q Agent
         
         Arguments:
@@ -29,13 +43,13 @@ class DDQAgent(object):
         self.epsilon = epsilon
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_min
-        self.memory = ReplayBuffer(memory_size,input_dimension,n_actions,True)
+        self.memory = ReplayBuffer(memory_size, input_dimension, n_actions, True)
         self.filename = filename
         self.replace_target = replace_target
-        self.batch_size=batch_size
-        self.q_evaluation = build_model(alpha,n_actions,input_dimension)
-        self.q_target = build_model(alpha,n_actions,input_dimension)
-    
+        self.batch_size = batch_size
+        self.q_evaluation = build_model(alpha, n_actions, input_dimension)
+        self.q_target = build_model(alpha, n_actions, input_dimension)
+
     def remember(self, state, action, reward, new_state, done):
         """Remember game information
         
@@ -48,8 +62,8 @@ class DDQAgent(object):
         """
         action = self.encode_game_input(action)
         action = self.bits_to_integers(np.array([action]))[0]
-        self.memory.store_trainsition(state,action,reward,new_state,done)
-    
+        self.memory.store_trainsition(state, action, reward, new_state, done)
+
     def choose_action(self, state):
         """Choose action based on state
         
@@ -60,67 +74,70 @@ class DDQAgent(object):
             [arry] -- [action]
         """
         rand = np.random.random_sample()
-        state = state[np.newaxis,:]
+        state = state[np.newaxis, :]
 
-        #Exploration
-        if rand<self.epsilon:
+        # Exploration
+        if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-
-            #Add bias for mario to go right if he is performing random action
-            if np.random.random_sample()<0.7:
-                bias = self.decode_game_input(self.integers_to_bits(np.array([action]))[0])
-                bias[4:8] = [0,0,0,1]
-                return bias
-        
-        #Greedy choice
+            
+        # Greedy choice
         else:
-            actions= self.q_evaluation.predict(state)
+            actions = self.q_evaluation.predict(state)
             action = np.argmax(actions)
-        
+
         return self.decode_game_input(self.integers_to_bits(np.array([action]))[0])
-    
+
     def learn(self):
         """Update weights of q models
         """
 
-        #Only learning if memory capacity is above batch_size
-        if self.memory.memory_counter>self.batch_size:
+        # Only learning if memory capacity is above batch_size
+        if self.memory.memory_counter > self.batch_size:
 
-            #Sample memory for datasets
-            states, actions, rewards, new_states,dones =self.memory.sample_buffer(self.batch_size)
-            actions_value  = np.array(self.actions_space,dtype=np.int16)
+            # Sample memory for datasets
+            states, actions, rewards, new_states, dones = self.memory.sample_buffer(
+                self.batch_size
+            )
+            actions_value = np.array(self.actions_space, dtype=np.int16)
 
-            #Convert one-hot-encoding to int 
-            action_indices = np.dot(actions,actions_value)
+            # Convert one-hot-encoding to int
+            action_indices = np.dot(actions, actions_value)
 
-            #Find the ideal q for new states
+            # Find the ideal q for new states
             q_next = self.q_target.predict(new_states)
 
-            #Find the predicted q for the new states
+            # Find the predicted q for the new states
             q_eval = self.q_evaluation.predict(new_states)
 
-            #Find the predicted q for the current states
-            q_pred= self.q_evaluation.predict(states)
+            # Find the predicted q for the current states
+            q_pred = self.q_evaluation.predict(states)
 
-            #Find the most likely action to be taken by finding the maximum q
-            max_actions =np.argmax(q_eval, axis=1)
+            # Find the most likely action to be taken by finding the maximum q
+            max_actions = np.argmax(q_eval, axis=1)
 
-            q_target =q_pred
+            q_target = q_pred
 
-            #Expand batch_size to array of 0,1,...,batch_size-1
+            # Expand batch_size to array of 0,1,...,batch_size-1
             batch_index = np.arange(self.batch_size, dtype=np.int32)
 
-            #Update q value of actions that will be taken to its ideal q
-            q_target[batch_index,action_indices]= rewards + self.gamma*q_next[batch_index,max_actions.astype(int)]*dones
+            # Update q value of actions that will be taken to its ideal q
+            q_target[batch_index, action_indices] = (
+                rewards
+                + self.gamma * q_next[batch_index, max_actions.astype(int)] * dones
+            )
 
-            #Train evaluation model to fit states to q_target
-            self.q_evaluation.fit(states, q_target, verbose =0)
+            # Train evaluation model to fit states to q_target
+            self.q_evaluation.fit(states, q_target, verbose=0)
 
-            #Update epsilon
-            self.epsilon =self.epsilon*self.epsilon_dec if self.epsilon>self.epsilon_min else self.epsilon_min
+            # Update epsilon
+            self.epsilon = (
+                self.epsilon * self.epsilon_dec
+                if self.epsilon > self.epsilon_min
+                else self.epsilon_min
+            )
 
-            #Update target model after a certain amount of training
-            if(self.memory.memory_counter% self.replace_target==0):
+            # Update target model after a certain amount of training
+            if self.memory.memory_counter % self.replace_target == 0:
                 self.update_network_params()
 
     def update_network_params(self):
@@ -138,11 +155,10 @@ class DDQAgent(object):
         """
         if path.exists(self.filename):
             self.q_evaluation = models.load_model(self.filename)
-            if self.epsilon<=self.epsilon_min:
+            if self.epsilon <= self.epsilon_min:
                 self.update_network_params()
-        
 
-    def bits_to_integers(self,values):
+    def bits_to_integers(self, values):
         """Array of bit to array of integer
         
         Arguments:
@@ -153,7 +169,7 @@ class DDQAgent(object):
         """
         return values.dot(1 << np.arange(values.shape[-1]))
 
-    def integers_to_bits(self,values, bits_length=8):
+    def integers_to_bits(self, values, bits_length=8):
         """Convert array of integer to array of bit
         
         Arguments:
@@ -167,7 +183,6 @@ class DDQAgent(object):
         """
 
         return (((values[:, None] & (1 << np.arange(bits_length)))) > 0).astype(int)
-
 
     def encode_game_input(self, value):
         """Compress game_input to smaller array to remove unneccessary input
