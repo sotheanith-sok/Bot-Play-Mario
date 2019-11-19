@@ -14,7 +14,7 @@ class DDQAgent(object):
         epsilon,
         batch_size,
         input_dimension,
-        epsilon_dec=0.9999,
+        epsilon_dec=0.998,
         epsilon_min=0.01,
         memory_size=1000,
         filename="DDQ_Model.h5",
