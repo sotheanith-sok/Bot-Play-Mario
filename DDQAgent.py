@@ -126,7 +126,7 @@ class DDQAgent(object):
             )
 
             # Train evaluation model to fit states to q_target
-            self.q_evaluation.fit(states, q_target, verbose=0, epochs=5)
+            self.q_evaluation.fit(states, q_target, verbose=0)
 
             # Update epsilon
             self.epsilon = (

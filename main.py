@@ -32,7 +32,7 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 30         #Keep track of how many frame between each time agent learn
+learnEvery = 5         #Keep track of how many frame between each time agent learn
 rememberEvery = 5       #How many frame between each time agent remember
 frame_skip=5            #Only getting new action every 5 frame
 
@@ -63,8 +63,8 @@ for i in range(n_games):
 
         oberservation = new_oberservation
         # Agent will learn every 300 frame
-        if frame_counter % learnEvery == 0:
-            agent.learn()
+        # if frame_counter % learnEvery == 0:
+        #     agent.learn()
         
         frame_counter+=1
     
