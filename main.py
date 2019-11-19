@@ -32,7 +32,7 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 10         #Keep track of how many frame between each time agent learn
+learnEvery = 60         #Keep track of how many frame between each time agent learn
 rememberEvery = 5       #How many frame between each time agent remember
 frame_skip=15            #Only getting new action every 5 frame
 
