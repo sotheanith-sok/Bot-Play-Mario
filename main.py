@@ -15,7 +15,7 @@ n_games = 5000
 
 # Initialize double deep q agent
 agent = DDQAgent(
-    alpha=0.001,       # Learning Rate
+    alpha=0.01,       # Learning Rate
     gamma=0.999,         # Discount factor. Make future event weighted less
     n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
