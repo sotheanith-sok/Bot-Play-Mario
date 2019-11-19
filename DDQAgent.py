@@ -97,7 +97,7 @@ class DDQAgent(object):
             states, actions, rewards, new_states, dones = self.memory.sample_buffer(
                 self.batch_size
             )
-            actions_value = np.array(self.actions_space, dtype=np.int16)
+            actions_value = np.array(self.actions_space, dtype=np.int8)
 
             # Convert one-hot-encoding to int
             action_indices = np.dot(actions, actions_value)
@@ -117,7 +117,7 @@ class DDQAgent(object):
             q_target = q_pred
 
             # Expand batch_size to array of 0,1,...,batch_size-1
-            batch_index = np.arange(self.batch_size, dtype=np.int32)
+            batch_index = np.arange(self.batch_size, dtype=np.int8)
 
             # Update q value of actions that will be taken to its ideal q
             q_target[batch_index, action_indices] = (

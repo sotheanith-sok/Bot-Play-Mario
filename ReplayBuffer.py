@@ -11,7 +11,7 @@ class ReplayBuffer(object):
         self.discrete = discrete
         self.states_memory = np.zeros(((self.memory_size,) + input_dimension))
         self.new_states_memory = np.zeros(((self.memory_size,) + input_dimension))
-        dtype = np.int16 if self.discrete else np.float
+        dtype = np.int8 if self.discrete else np.float
         self.actions_memory = np.zeros(
             ((self.memory_size,) + (n_actions,)), dtype=dtype
         )
