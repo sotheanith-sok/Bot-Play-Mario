@@ -34,7 +34,7 @@
     },
     "x_speed": {
       "address": 8257659,
-      "type": "<i1"
+      "type": "=i1"
     }
   }
 }

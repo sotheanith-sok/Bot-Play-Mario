@@ -20,7 +20,7 @@ agent = DDQAgent(
     n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
     epsilon_dec=0.999,  #How fast should start perform greedy action
-    batch_size=64,      # How many samples should this agent train on
+    batch_size=100,      # How many samples should this agent train on
     input_dimension=(56, 64, 3),  # Input dimension.
     memory_size=5000,   # Max capacity of ReplayBuffer
 )
