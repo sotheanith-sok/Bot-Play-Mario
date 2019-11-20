@@ -16,13 +16,13 @@ n_games = 5000
 # Initialize double deep q agent
 agent = DDQAgent(
     alpha=0.00025,       # Learning Rate
-    gamma=0.9,         # Discount factor. Make future event weighted less
+    gamma=0.99,         # Discount factor. Make future event weighted less
     n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.99999975,  #How fast should start perform greedy action
+    epsilon_dec=0.999995,  #How fast should start perform greedy action
     epsilon_min=0.1,
     batch_size=32,      # How many samples should this agent train on
-    input_dimension=(56, 64, 3),  # Input dimension.
+    input_dimension=(112, 128, 3),  # Input dimension.
     memory_size=5000,   # Max capacity of ReplayBuffer
 )
 
@@ -33,16 +33,16 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 1         #Keep track of how many frame between each time agent learn
-rememberEvery = 1       #How many frame between each time agent remember
-frame_skip=3            #Only getting new action every 5 frame
+learnEvery = 5         #Keep track of how many frame between each time agent learn
+rememberEvery = 5       #How many frame between each time agent remember
+frame_skip= 5            #Only getting new action every 4 frame
 
 #Start playing
 for i in range(n_games):
 
     done = False 
     score = 0
-    oberservation = cv2.resize(env.reset() / 255.0,(64,56)) #Scale rgb to between 0 and 1 and resize frame
+    oberservation = cv2.resize(env.reset() / 255.0,(128,112)) #Scale rgb to between 0 and 1 and resize frame
     frame_counter = 0
 
     # action = agent.choose_action(oberservation)
@@ -54,7 +54,7 @@ for i in range(n_games):
         # Time Step
         new_oberservation, reward, done, _ = env.step(action)
         #Scale rgb to between 0 and 1 and resize frame
-        new_oberservation = cv2.resize(new_oberservation / 255.0,(64,56))
+        new_oberservation = cv2.resize(new_oberservation / 255.0,(128,112))
         score += reward
 
         
@@ -74,11 +74,11 @@ for i in range(n_games):
     print(
         "Episode",
         i,
-        "score %.2f" % score,
-        "Average score %.2f" % avg_score,
-        "Epsilon %.2f" % agent.epsilon,
+        "score %.8f" % score,
+        "Average score %.8f" % avg_score,
+        "Epsilon %.8f" % agent.epsilon,
     )
 
     #Save model every 10 episodes
-    if i % 10 == 0 and i > 0:
+    if i % 1 == 0 and i > 0:
         agent.save_model()

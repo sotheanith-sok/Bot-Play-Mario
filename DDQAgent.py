@@ -4,6 +4,7 @@ from tensorflow.keras import models, backend
 import gc
 from os import path
 import numpy as np
+import pickle
 
 
 class DDQAgent(object):
@@ -79,8 +80,8 @@ class DDQAgent(object):
         # Exploration
         if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-            # if np.random.random_sample()>0.5:
-            #     action = 1
+            if np.random.random_sample()>0.5*self.epsilon*2:
+                action = 1
         # Greedy choice
         else:
             actions = self.q_evaluation.predict(state)
@@ -128,7 +129,7 @@ class DDQAgent(object):
             )
 
             # Train evaluation model to fit states to q_target
-            self.q_evaluation.fit(states, q_target, verbose=0)
+            # self.q_evaluation.fit(states, q_target, verbose=0)
 
             # Update epsilon
             self.epsilon = (
@@ -153,7 +154,10 @@ class DDQAgent(object):
         self.q_target.save(self.filename+"_target.h5")
         backend.clear_session()
         gc.collect()
-        self.load_model()
+        if path.exists(self.filename+"_eval.h5"):
+            self.q_evaluation = models.load_model(self.filename+"_eval.h5")
+            self.q_target = models.load_model(self.filename+"_target.h5")
+        self.save_parameters()
 
 
     def load_model(self):
@@ -162,6 +166,9 @@ class DDQAgent(object):
         if path.exists(self.filename+"_eval.h5"):
             self.q_evaluation = models.load_model(self.filename+"_eval.h5")
             self.q_target = models.load_model(self.filename+"_target.h5")
+
+        self.load_parameters()
+        
 
     def bits_to_integers(self, values):
         """Array of bit to array of integer
@@ -233,3 +240,11 @@ class DDQAgent(object):
         elif value == 5:
             return [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
 
+    def save_parameters(self):
+        with open('hyperparameters.pkl', 'wb') as f:
+            pickle.dump([self.epsilon], f)
+
+    def load_parameters(self):
+        if path.exists("hyperparameters.pkl"):
+            with open('hyperparameters.pkl', "wb") as f:  # Python 3: open(..., 'rb')
+                self.epsilon = pickle.load(f)
