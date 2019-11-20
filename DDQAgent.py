@@ -129,7 +129,7 @@ class DDQAgent(object):
             )
 
             # Train evaluation model to fit states to q_target
-            # self.q_evaluation.fit(states, q_target, verbose=0)
+            self.q_evaluation.fit(states, q_target, verbose=0)
 
             # Update epsilon
             self.epsilon = (
@@ -242,9 +242,9 @@ class DDQAgent(object):
 
     def save_parameters(self):
         with open('hyperparameters.pkl', 'wb') as f:
-            pickle.dump([self.epsilon], f)
+            pickle.dump(self.epsilon, f)
 
     def load_parameters(self):
         if path.exists("hyperparameters.pkl"):
-            with open('hyperparameters.pkl', "wb") as f:  # Python 3: open(..., 'rb')
+            with open('hyperparameters.pkl', "rb") as f:  # Python 3: open(..., 'rb')
                 self.epsilon = pickle.load(f)

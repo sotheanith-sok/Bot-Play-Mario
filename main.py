@@ -19,7 +19,7 @@ agent = DDQAgent(
     gamma=0.99,         # Discount factor. Make future event weighted less
     n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.999995,  #How fast should start perform greedy action
+    epsilon_dec=0.999999,  #How fast should start perform greedy action
     epsilon_min=0.1,
     batch_size=32,      # How many samples should this agent train on
     input_dimension=(112, 128, 3),  # Input dimension.
@@ -80,5 +80,5 @@ for i in range(n_games):
     )
 
     #Save model every 10 episodes
-    if i % 1 == 0 and i > 0:
+    if i % 10 == 0 and i > 0:
         agent.save_model()
