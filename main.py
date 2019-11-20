@@ -33,9 +33,9 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 60         #Keep track of how many frame between each time agent learn
-rememberEvery = 5       #How many frame between each time agent remember
-frame_skip=15            #Only getting new action every 5 frame
+learnEvery = 5         #Keep track of how many frame between each time agent learn
+rememberEvery = 1       #How many frame between each time agent remember
+frame_skip=5            #Only getting new action every 5 frame
 
 #Start playing
 for i in range(n_games):
