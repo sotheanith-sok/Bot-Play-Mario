@@ -1,6 +1,7 @@
 from ReplayBuffer import ReplayBuffer
 from models import build_model
-from tensorflow.keras import models
+from tensorflow.keras import models, backend
+import gc
 from os import path
 import numpy as np
 
@@ -17,7 +18,7 @@ class DDQAgent(object):
         epsilon_dec=0.998,
         epsilon_min=0.01,
         memory_size=1000,
-        filename="DDQ_Model.h5",
+        filename="DDQ_Model",
         replace_target=100,
     ):
         """Initialize Double Deep Q Agent
@@ -148,15 +149,19 @@ class DDQAgent(object):
     def save_model(self):
         """Save evaluation model
         """
-        self.q_evaluation.save(self.filename)
+        self.q_evaluation.save(self.filename+"_eval.h5")
+        self.q_target.save(self.filename+"_target.h5")
+        backend.clear_session()
+        gc.collect()
+        self.load_model()
+
 
     def load_model(self):
         """Load evaluation model. Update target model if epsilon is 0
         """
-        if path.exists(self.filename):
-            self.q_evaluation = models.load_model(self.filename)
-            if self.epsilon <= self.epsilon_min:
-                self.update_network_params()
+        if path.exists(self.filename+"_eval.h5"):
+            self.q_evaluation = models.load_model(self.filename+"_eval.h5")
+            self.q_target = models.load_model(self.filename+"_target.h5")
 
     def bits_to_integers(self, values):
         """Array of bit to array of integer
