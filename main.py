@@ -21,9 +21,9 @@ agent = DDQAgent(
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
     epsilon_dec=0.99999975,  #How fast should start perform greedy action
     epsilon_min=0.1,
-    batch_size=64,      # How many samples should this agent train on
+    batch_size=32,      # How many samples should this agent train on
     input_dimension=(56, 64, 3),  # Input dimension.
-    memory_size=5000,   # Max capacity of ReplayBuffer
+    memory_size=100000,   # Max capacity of ReplayBuffer
 )
 
 #Load agent
@@ -33,9 +33,9 @@ agent.load_model()
 scores = []
 
 #Some variable
-learnEvery = 5         #Keep track of how many frame between each time agent learn
+learnEvery = 1         #Keep track of how many frame between each time agent learn
 rememberEvery = 1       #How many frame between each time agent remember
-frame_skip=5            #Only getting new action every 5 frame
+frame_skip=3            #Only getting new action every 5 frame
 
 #Start playing
 for i in range(n_games):
