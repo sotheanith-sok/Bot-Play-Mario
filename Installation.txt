@@ -1,5 +1,6 @@
 1. Install Anaconda
     LINK: https://www.anaconda.com/distribution/
+    Don't forget to check "Add Anaconda to my PATH enviroment variable"
 
 2. Create new enviroment (Run belows code in your command line)
     conda init powershell
@@ -12,12 +13,14 @@
     conda install black
 
     //If you have Nvidia GPU (Pick this one)
-    conda install tensorflow-gpu
+    conda install tensorflow-gpu=1.15.0
     //Else if you have only cpu(Pick one only)
     conda install tensorflow
 
     pip install pyglet==1.3.2
     pip install gym-retro
+
+    conda install opencv
 
 4. Import ROM
     python -m retro.import ./Rom
