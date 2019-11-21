@@ -11,7 +11,7 @@ env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
 env = Monitor(env, './video', resume=True, video_callable=lambda episode_id: episode_id%10==0)
 
 # How many episodes to play
-n_games = 10000
+n_games = 100000
 
 # Initialize double deep q agent
 agent = DDQAgent(
