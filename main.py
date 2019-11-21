@@ -10,7 +10,7 @@ env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
 
 # Recoder video for every 10 episodes
 env = Monitor(
-    env, "./data/video", resume=True, video_callable=lambda episode_id: episode_id % 10 == 0
+    env, "./data/video", resume=True, video_callable=lambda episode_id: episode_id % 10 == 0, uid="DDQA"
 )
 
 # How many episodes to play

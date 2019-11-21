@@ -222,5 +222,5 @@ class DDQAgent(object):
 
     def load_parameters(self):
         if path.exists("./data/hyperparameters.pkl"):
-            with open('hyperparameters.pkl', "rb") as f:  # Python 3: open(..., 'rb')
+            with open('./data/hyperparameters.pkl', "rb") as f:  # Python 3: open(..., 'rb')
                 self.epsilon = pickle.load(f)
