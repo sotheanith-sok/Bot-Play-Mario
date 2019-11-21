@@ -1,3 +1,8 @@
+import os
+import logging
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+logging.getLogger('tensorflow').setLevel(logging.FATAL)
+
 from ReplayBuffer import ReplayBuffer
 from models import build_model
 from tensorflow.keras import models, backend
@@ -5,6 +10,7 @@ import gc
 from os import path
 import numpy as np
 import pickle
+import tensorflow as tf
 
 
 class DDQAgent(object):
@@ -16,11 +22,11 @@ class DDQAgent(object):
         epsilon,
         batch_size,
         input_dimension,
-        epsilon_dec=0.998,
-        epsilon_min=0.01,
-        memory_size=1000,
+        epsilon_dec=99999975,
+        epsilon_min=0.1,
+        memory_size=20000,
         filename="DDQ_Model",
-        replace_target=100,
+        replace_target=10000,
     ):
         """Initialize Double Deep Q Agent
         
