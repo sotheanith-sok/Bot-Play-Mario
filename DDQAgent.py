@@ -155,22 +155,22 @@ class DDQAgent(object):
     def save_model(self):
         """Save evaluation model
         """
-        self.q_evaluation.save(self.filename+"_eval.h5")
-        self.q_target.save(self.filename+"_target.h5")
+        self.q_evaluation.save("./data/"+self.filename+"_eval.h5")
+        self.q_target.save("./data/"+self.filename+"_target.h5")
         backend.clear_session()
         gc.collect()
-        if path.exists(self.filename+"_eval.h5"):
-            self.q_evaluation = models.load_model(self.filename+"_eval.h5")
-            self.q_target = models.load_model(self.filename+"_target.h5")
+        if path.exists("./data/"+self.filename+"_eval.h5"):
+            self.q_evaluation = models.load_model("./data/"+self.filename+"_eval.h5")
+            self.q_target = models.load_model("./data/"+self.filename+"_target.h5")
         self.save_parameters()
 
 
     def load_model(self):
         """Load evaluation model. Update target model if epsilon is 0
         """
-        if path.exists(self.filename+"_eval.h5"):
-            self.q_evaluation = models.load_model(self.filename+"_eval.h5")
-            self.q_target = models.load_model(self.filename+"_target.h5")
+        if path.exists("./data/"+self.filename+"_eval.h5"):
+            self.q_evaluation = models.load_model("./data/"+self.filename+"_eval.h5")
+            self.q_target = models.load_model("./data/"+self.filename+"_target.h5")
 
         self.load_parameters()
 
@@ -217,10 +217,10 @@ class DDQAgent(object):
             return [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
     def save_parameters(self):
-        with open('hyperparameters.pkl', 'wb') as f:
+        with open('./data/hyperparameters.pkl', 'wb') as f:
             pickle.dump(self.epsilon, f)
 
     def load_parameters(self):
-        if path.exists("hyperparameters.pkl"):
+        if path.exists("./data/hyperparameters.pkl"):
             with open('hyperparameters.pkl', "rb") as f:  # Python 3: open(..., 'rb')
                 self.epsilon = pickle.load(f)
