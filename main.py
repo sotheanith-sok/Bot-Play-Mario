@@ -26,7 +26,7 @@ agent = DDQAgent(
     epsilon_min=0.1,
     batch_size=32,  # How many samples should this agent train on
     input_dimension=(112, 128, 3),  # Input dimension.
-    memory_size=20000,  # Max capacity of ReplayBuffer
+    memory_size=10000,  # Max capacity of ReplayBuffer
 )
 
 

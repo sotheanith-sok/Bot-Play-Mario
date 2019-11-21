@@ -22,9 +22,9 @@ class DDQAgent(object):
         epsilon,
         batch_size,
         input_dimension,
-        epsilon_dec=99999975,
+        epsilon_dec=0.99999975,
         epsilon_min=0.1,
-        memory_size=20000,
+        memory_size=10000,
         filename="DDQ_Model",
         replace_target=10000,
     ):
@@ -39,11 +39,11 @@ class DDQAgent(object):
             input_dimension {tuple} -- [Dimension of inputs]
         
         Keyword Arguments:
-            epsilon_dec {float} -- [Epsilon decresion rate] (default: {0.9999})
-            epsilon_min {float} -- [Minimum Epsilon] (default: {0.01})
-            memory_size {int} -- [Max memory size] (default: {1000})
+            epsilon_dec {float} -- [Epsilon decresion rate] (default: {0.99999975})
+            epsilon_min {float} -- [Minimum Epsilon] (default: {0.1})
+            memory_size {int} -- [Max memory size] (default: {10000})
             filename {str} -- [Name of model] (default: {"DDQ_Model.h5"})
-            replace_target {int} -- [Interval in which weight of target model is being updated] (default: {100})
+            replace_target {int} -- [Interval in which weight of target model is being updated] (default: {10000})
         """
         self.n_actions = n_actions
         self.actions_space = [i for i in range(self.n_actions)]
