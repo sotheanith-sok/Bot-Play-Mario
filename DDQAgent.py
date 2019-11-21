@@ -80,8 +80,7 @@ class DDQAgent(object):
         # Exploration
         if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-            if np.random.random_sample()>0.5*self.epsilon*2:
-                action = 1
+            
         # Greedy choice
         else:
             actions = self.q_evaluation.predict(state)
@@ -168,43 +167,10 @@ class DDQAgent(object):
             self.q_target = models.load_model(self.filename+"_target.h5")
 
         self.load_parameters()
-        
-
-    def bits_to_integers(self, values):
-        """Array of bit to array of integer
-        
-        Arguments:
-            values {array} -- [Array of bit]
-        
-        Returns:
-            [array] -- [Array of integer]
-        """
-        return values.dot(1 << np.arange(values.shape[-1]))
-
-    def integers_to_bits(self, values, bits_length=8):
-        """Convert array of integer to array of bit
-        
-        Arguments:
-            values {array} -- [Array of integer]
-        
-        Keyword Arguments:
-            bits_length {int} -- [lenght of bits] (default: {12})
-        
-        Returns:
-            [array] -- [array of bits]
-        """
-
-        return (((values[:, None] & (1 << np.arange(bits_length)))) > 0).astype(int)
 
     def encode_game_input(self, value):
         """Compress game_input to smaller array to remove unneccessary input
         """
-        # raw_input = np.array(value, dtype=np.int8)
-        # encoded_input = np.zeros((8), dtype=np.int8)
-        # encoded_input[0:2] = raw_input[0:2]
-        # encoded_input[2:8] = raw_input[4:10]
-        # return encoded_input
-
         raw_input = np.array(value, dtype=np.int8)
         if np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
             return 0  # Doing nothing
@@ -218,15 +184,15 @@ class DDQAgent(object):
             return 4  # Jump
         elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]):
             return 5  # Spin Jump
+        elif np.array_equal(raw_input, [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]):
+            return 6  # Jump Right
+        elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]):
+            return 7  # Spin Jump Right
+        
 
     def decode_game_input(self, value):
         """Decompress input back to its original form
         """
-        # encoded_input = np.array(value, dtype=np.int8)
-        # raw_input = np.zeros((12), dtype=np.int8)
-        # raw_input[0:2] = encoded_input[0:2]
-        # raw_input[4:10] = encoded_input[2:8]
-        # return raw_input
         if value == 0:
             return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         elif value == 1:
@@ -239,6 +205,10 @@ class DDQAgent(object):
             return [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         elif value == 5:
             return [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        elif value == 6:
+            return [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+        elif value == 7:
+            return [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
     def save_parameters(self):
         with open('hyperparameters.pkl', 'wb') as f:

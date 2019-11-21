@@ -8,22 +8,22 @@ from DDQAgent import DDQAgent
 env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
 
 # Recoder video for every 10 episodes
-env = Monitor(env, './video', force=True, video_callable=lambda episode_id: episode_id%10==0)
+env = Monitor(env, './video', resume=True, video_callable=lambda episode_id: episode_id%10==0)
 
 # How many episodes to play
-n_games = 5000
+n_games = 10000
 
 # Initialize double deep q agent
 agent = DDQAgent(
     alpha=0.00025,       # Learning Rate
     gamma=0.99,         # Discount factor. Make future event weighted less
-    n_actions=6,      # Number of possible actions. 2^8 for 8 inputs
+    n_actions=8,      # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,        # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.999999,  #How fast should start perform greedy action
+    epsilon_dec=0.99999975,  #How fast should start perform greedy action
     epsilon_min=0.1,
     batch_size=32,      # How many samples should this agent train on
     input_dimension=(112, 128, 3),  # Input dimension.
-    memory_size=5000,   # Max capacity of ReplayBuffer
+    memory_size=10000,   # Max capacity of ReplayBuffer
 )
 
 #Load agent
