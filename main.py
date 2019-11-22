@@ -78,11 +78,12 @@ for i in range(n_games):
     scores.append(score)
     avg_score = np.mean(scores[max(0, i - 100) : i + 1])
     print(
-        "Episode",
+        "Episode:",
         i,
-        "score %.8f" % score,
-        "Average score %.8f" % avg_score,
-        "Epsilon %.8f" % agent.epsilon,
+        "score: %.8f" % score,
+        "Average score: %.8f" % avg_score,
+        "Epsilon: %.8f" % agent.epsilon,
+        "Loss: %.8f" % agent.last_loss,
     )
 
     with open("./data/performance_file.bin", "ab+") as performance_file:
