@@ -83,8 +83,9 @@ for i in range(n_games):
         "score: %.8f" % score,
         "Average score: %.8f" % avg_score,
         "Epsilon: %.8f" % agent.epsilon,
-        "Loss: %.15f" % agent.last_loss,
+        "Average Loss: %.15f" % np.mean(agent.losses)
     )
+    agent.losses.clear()
 
     with open("./data/performance_file.bin", "ab+") as performance_file:
         pickle.dump([score, avg_score, agent.epsilon], performance_file)

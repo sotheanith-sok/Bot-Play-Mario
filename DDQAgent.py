@@ -57,7 +57,7 @@ class DDQAgent(object):
         self.batch_size = batch_size
         self.q_evaluation = build_model(alpha, n_actions, input_dimension)
         self.q_target = build_model(alpha, n_actions, input_dimension)
-        self.last_loss = 0
+        self.losses = []
 
     def remember(self, state, action, reward, new_state, done):
         """Remember game information
@@ -136,7 +136,7 @@ class DDQAgent(object):
 
             # Train evaluation model to fit states to q_target
             History = self.q_evaluation.fit(states, q_target, verbose=0)
-            self.last_loss = History.history['loss'][0]
+            self.losses.append(History.history['loss'][0])
 
             # Update epsilon
             self.epsilon = (
