@@ -1,87 +1,74 @@
 import numpy as np
-from SumTree import SumTree
+import sys
+
+np.set_printoptions(threshold=sys.maxsize)
 
 
 class PrioritizedReplayBuffer(object):
     def __init__(self, max_size, input_dimension, n_actions, discrete=False):
-        self.discrete = discrete
+        # Prevent overusage of memory
         self.memory_size = max_size
-        self.tree = SumTree(self.memory_size)
-        self.n_actions = n_actions
+        self.memory_counter = 0
 
-        self.e = 0.01
-        self.a = 0.6
-        self.b = 0.4
-        self.b_increment_per_sampling = 0.001
-        self.absolute_error_upper = 1.0
+        # Check if input is continue or discrete values
+        self.discrete = discrete
+        self.states_memory = np.zeros(((self.memory_size,) + input_dimension))
+        self.new_states_memory = np.zeros(((self.memory_size,) + input_dimension))
+        dtype = np.int8 if self.discrete else np.float
+        self.actions_memory = np.zeros(
+            ((self.memory_size,) + (n_actions,)), dtype=dtype
+        )
+        self.rewards_memory = np.zeros(self.memory_size)
+        self.terminals_memory = np.zeros(self.memory_size, dtype=np.float)
 
-        pass
+        self.priorities = np.zeros(self.memory_size)
 
     def store_trainsition(self, state, action, reward, new_state, done):
-        one_hot_action = np.zeros(self.n_actions)
-        one_hot_action[action] = 1
+        index = self.memory_counter % self.memory_size
+        self.states_memory[index] = state
+        self.actions_memory[index] = action
+        if self.discrete:
+            actions = np.zeros(np.shape(self.actions_memory)[1])
+            actions[action] = 1.0
+            self.actions_memory[index] = actions
+        else:
+            self.actions_memory[index] = action
+        self.new_states_memory[index] = new_state
+        self.terminals_memory[index] = 1 - int(done)
 
-        max_priority = np.max(self.tree.tree[-self.tree.capacity :])
-        if max_priority == 0:
-            max_priority = self.absolute_error_upper
+        if self.memory_counter == 0:
+            self.priorities[index] = 1
+        else:
+            self.priorities[index] = np.max(self.priorities)
 
-        self.tree.add(max_priority, (state, one_hot_action, reward, new_state, done))
+        self.memory_counter += 1
 
-    def sample_buffer(self, batch_size):
-        # Create a sample array that will contains the minibatch
-        memory_b = []
+    def get_probabilities(self, priority_scale):
+        scaled_priority = np.power(self.priorities, priority_scale)
+        sample_probabilities = np.divide(scaled_priority, np.sum(scaled_priority))
+        return sample_probabilities
 
-        b_idx, b_ISWeights = (
-            np.empty((batch_size,), dtype=np.int32),
-            np.empty((batch_size, 1), dtype=np.float32),
-        )
+    def get_importance(self, probabilities):
+        importance = 1 / self.memory_size * 1 / probabilities
+        importance_normalized = importance / max(importance)
+        return importance_normalized
 
-        # Calculate the priority segment
-        # Here, as explained in the paper, we divide the Range[0, ptotal] into n ranges
-        priority_segment = self.tree.total_priority / batch_size  # priority segment
+    def sample_buffer(self, batch_size, priority_scale=1.0):
+        max_memory = min(self.memory_counter, self.memory_size)
 
-        # Here we increasing the PER_b each time we sample a new minibatch
-        self.b = np.min(
-            [1.0, self.b + self.b_increment_per_sampling]
-        )  # max = 1
+        sample_probs = self.get_probabilities(priority_scale)
 
-        # Calculating the max_weight
-        p_min = np.min(self.tree.tree[-self.tree.capacity :]) / self.tree.total_priority
-        max_weight = (p_min * batch_size) ** (-self.b)
+        indices = np.random.choice(max_memory, batch_size, p=sample_probs[0:max_memory])
 
-        for i in range(batch_size):
-            """
-            A value is uniformly sample from each range
-            """
-            a, b = priority_segment * i, priority_segment * (i + 1)
-            value = np.random.uniform(a, b)
+        states = self.states_memory[indices]
+        new_states = self.new_states_memory[indices]
+        rewards = self.rewards_memory[indices]
+        actions = self.actions_memory[indices]
+        terminals = self.terminals_memory[indices]
 
-            """
-            Experience that correspond to each value is retrieved
-            """
-            index, priority, data = self.tree.get_leaf(value)
+        importances = self.get_importance(sample_probs[indices])
+        return states, actions, rewards, new_states, terminals, importances, indices
 
-            # P(j)
-            sampling_probabilities = priority / self.tree.total_priority
-
-            #  IS = (1/N * 1/P(i))**b /max wi == (N*P(i))**-b  /max wi
-            b_ISWeights[i, 0] = (
-                np.power(batch_size * sampling_probabilities, -self.b) / max_weight
-            )
-
-            b_idx[i] = index
-
-            experience = [data]
-
-            memory_b.append(experience)
-
-        return b_idx, memory_b, b_ISWeights
-
-
-    def batch_update(self, tree_idx, abs_errors):
-        abs_errors += self.e  # convert to abs and avoid 0
-        clipped_errors = np.minimum(abs_errors, self.absolute_error_upper)
-        ps = np.power(clipped_errors, self.a)
-
-        for ti, p in zip(tree_idx, ps):
-            self.tree.update(ti, p)
+    def set_priorities(self, indices, errors, offset=0.1):
+        for i, e in zip(indices, errors):
+            self.priorities[i] = abs(e) + offset

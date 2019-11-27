@@ -83,7 +83,7 @@ for i in range(n_games):
         "score: %.8f" % score,
         "Average score: %.8f" % avg_score,
         "Epsilon: %.8f" % agent.epsilon,
-        "Loss: %.15f" % agent.last_loss,
+        "Loss: %.15f" % agent.loss,
     )
 
     with open("./data/performance_file.bin", "ab+") as performance_file:

@@ -1,9 +1,11 @@
 import os
 import logging
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
-logging.getLogger('tensorflow').setLevel(logging.FATAL)
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # FATAL
+logging.getLogger("tensorflow").setLevel(logging.FATAL)
 
 from ReplayBuffer import ReplayBuffer
+from PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from models import build_model
 from tensorflow.keras import models, backend
 import gc
@@ -51,13 +53,15 @@ class DDQAgent(object):
         self.epsilon = epsilon
         self.epsilon_dec = epsilon_dec
         self.epsilon_min = epsilon_min
-        self.memory = ReplayBuffer(memory_size, input_dimension, n_actions, True)
+        self.memory = PrioritizedReplayBuffer(
+            memory_size, input_dimension, n_actions, True
+        )
         self.filename = filename
         self.replace_target = replace_target
         self.batch_size = batch_size
         self.q_evaluation = build_model(alpha, n_actions, input_dimension)
         self.q_target = build_model(alpha, n_actions, input_dimension)
-        self.last_loss = 0
+        self.loss = 0
 
     def remember(self, state, action, reward, new_state, done):
         """Remember game information
@@ -87,7 +91,7 @@ class DDQAgent(object):
         # Exploration
         if rand < self.epsilon:
             action = np.random.choice(self.actions_space)
-            
+
         # Greedy choice
         else:
             actions = self.q_evaluation.predict(state)
@@ -103,7 +107,7 @@ class DDQAgent(object):
         if self.memory.memory_counter > self.batch_size:
 
             # Sample memory for datasets
-            states, actions, rewards, new_states, dones = self.memory.sample_buffer(
+            states, actions, rewards, new_states, dones, importances, indices = self.memory.sample_buffer(
                 self.batch_size
             )
             actions_value = np.array(self.actions_space, dtype=np.int8)
@@ -134,9 +138,25 @@ class DDQAgent(object):
                 + self.gamma * q_next[batch_index, max_actions.astype(int)] * dones
             )
 
+            losses = []
+            for i in range(self.batch_size):
+
+                t = self.q_evaluation.evaluate(
+                    np.array([states[i]]),
+                    np.array([q_target[i]]),
+                    sample_weight=np.array([importances[i]]),
+                    verbose=0,
+                )
+                losses.append(t)
+
             # Train evaluation model to fit states to q_target
-            History = self.q_evaluation.fit(states, q_target, verbose=0)
-            self.last_loss = History.history['loss'][0]
+            History = self.q_evaluation.fit(
+                states, q_target, verbose=0, sample_weight=importances
+            )
+
+            self.loss = History.history["loss"][0]
+
+            self.memory.set_priorities(indices, losses)
 
             # Update epsilon
             self.epsilon = (
@@ -157,22 +177,25 @@ class DDQAgent(object):
     def save_model(self):
         """Save evaluation model
         """
-        self.q_evaluation.save("./data/"+self.filename+"_eval.h5")
-        self.q_target.save("./data/"+self.filename+"_target.h5")
+        self.q_evaluation.save("./data/" + self.filename + "_eval.h5")
+        self.q_target.save("./data/" + self.filename + "_target.h5")
         backend.clear_session()
         gc.collect()
-        if path.exists("./data/"+self.filename+"_eval.h5"):
-            self.q_evaluation = models.load_model("./data/"+self.filename+"_eval.h5")
-            self.q_target = models.load_model("./data/"+self.filename+"_target.h5")
+        if path.exists("./data/" + self.filename + "_eval.h5"):
+            self.q_evaluation = models.load_model(
+                "./data/" + self.filename + "_eval.h5"
+            )
+            self.q_target = models.load_model("./data/" + self.filename + "_target.h5")
         self.save_parameters()
-
 
     def load_model(self):
         """Load evaluation model. Update target model if epsilon is 0
         """
-        if path.exists("./data/"+self.filename+"_eval.h5"):
-            self.q_evaluation = models.load_model("./data/"+self.filename+"_eval.h5")
-            self.q_target = models.load_model("./data/"+self.filename+"_target.h5")
+        if path.exists("./data/" + self.filename + "_eval.h5"):
+            self.q_evaluation = models.load_model(
+                "./data/" + self.filename + "_eval.h5"
+            )
+            self.q_target = models.load_model("./data/" + self.filename + "_target.h5")
 
         self.load_parameters()
 
@@ -196,7 +219,6 @@ class DDQAgent(object):
             return 6  # Jump Right
         elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]):
             return 7  # Spin Jump Right
-        
 
     def decode_game_input(self, value):
         """Decompress input back to its original form
@@ -219,10 +241,12 @@ class DDQAgent(object):
             return [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
     def save_parameters(self):
-        with open('./data/hyperparameters.pkl', 'wb') as f:
+        with open("./data/hyperparameters.pkl", "wb") as f:
             pickle.dump(self.epsilon, f)
 
     def load_parameters(self):
         if path.exists("./data/hyperparameters.pkl"):
-            with open('./data/hyperparameters.pkl', "rb") as f:  # Python 3: open(..., 'rb')
+            with open(
+                "./data/hyperparameters.pkl", "rb"
+            ) as f:  # Python 3: open(..., 'rb')
                 self.epsilon = pickle.load(f)
