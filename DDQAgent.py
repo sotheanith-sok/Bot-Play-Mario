@@ -108,7 +108,9 @@ class DDQAgent(object):
 
             # Sample memory for datasets
             states, actions, rewards, new_states, dones, importances, indices = self.memory.sample_buffer(
-                self.batch_size
+                self.batch_size,
+                priority_scale=0.7,
+                probabilities_scale=1.0 - ((self.epsilon - self.epsilon_min) / (1 - self.epsilon_min))
             )
             actions_value = np.array(self.actions_space, dtype=np.int8)
 

@@ -48,12 +48,12 @@ class PrioritizedReplayBuffer(object):
         sample_probabilities = np.divide(scaled_priority, np.sum(scaled_priority))
         return sample_probabilities
 
-    def get_importance(self, probabilities):
-        importance = 1 / self.memory_size * 1 / probabilities
+    def get_importance(self, probabilities, probabilities_scale):
+        importance = np.power(1 / self.memory_size * 1 / probabilities, probabilities_scale)
         importance_normalized = importance / max(importance)
         return importance_normalized
 
-    def sample_buffer(self, batch_size, priority_scale=1.0):
+    def sample_buffer(self, batch_size, priority_scale=1.0, probabilities_scale=1.0):
         max_memory = min(self.memory_counter, self.memory_size)
 
         sample_probs = self.get_probabilities(priority_scale)
@@ -64,7 +64,9 @@ class PrioritizedReplayBuffer(object):
         rewards = self.rewards_memory[indices]
         actions = self.actions_memory[indices]
         terminals = self.terminals_memory[indices]
-        importances = self.get_importance(sample_probs[indices])
+        importances = self.get_importance(sample_probs[indices], probabilities_scale)
+
+        print(probabilities_scale)
         return states, actions, rewards, new_states, terminals, importances, indices
 
     def set_priorities(self, indices, errors, offset=0.1):
