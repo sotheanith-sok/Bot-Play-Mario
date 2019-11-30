@@ -12,16 +12,16 @@ class PrioritizedReplayBuffer(object):
 
         # Check if input is continue or discrete values
         self.discrete = discrete
-        self.states_memory = np.zeros(((self.memory_size,) + input_dimension))
-        self.new_states_memory = np.zeros(((self.memory_size,) + input_dimension))
+        self.states_memory = np.zeros(((self.memory_size,) + input_dimension),dtype=np.float32)
+        self.new_states_memory = np.zeros(((self.memory_size,) + input_dimension), dtype = np.float32)
         dtype = np.int8 if self.discrete else np.float
         self.actions_memory = np.zeros(
             ((self.memory_size,) + (n_actions,)), dtype=dtype
         )
-        self.rewards_memory = np.zeros(self.memory_size)
-        self.terminals_memory = np.zeros(self.memory_size, dtype=np.float)
+        self.rewards_memory = np.zeros(self.memory_size,dtype=np.float32)
+        self.terminals_memory = np.zeros(self.memory_size, dtype=np.int8)
 
-        self.priorities = np.zeros(self.memory_size)
+        self.priorities = np.zeros(self.memory_size, dtype= np.float32)
 
     def store_trainsition(self, state, action, reward, new_state, done):
         index = self.memory_counter % self.memory_size
@@ -59,13 +59,11 @@ class PrioritizedReplayBuffer(object):
         sample_probs = self.get_probabilities(priority_scale)
 
         indices = np.random.choice(max_memory, batch_size, p=sample_probs[0:max_memory])
-
         states = self.states_memory[indices]
         new_states = self.new_states_memory[indices]
         rewards = self.rewards_memory[indices]
         actions = self.actions_memory[indices]
         terminals = self.terminals_memory[indices]
-
         importances = self.get_importance(sample_probs[indices])
         return states, actions, rewards, new_states, terminals, importances, indices
 
