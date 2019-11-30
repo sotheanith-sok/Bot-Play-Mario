@@ -65,8 +65,6 @@ class PrioritizedReplayBuffer(object):
         actions = self.actions_memory[indices]
         terminals = self.terminals_memory[indices]
         importances = self.get_importance(sample_probs[indices], probabilities_scale)
-
-        print(probabilities_scale)
         return states, actions, rewards, new_states, terminals, importances, indices
 
     def set_priorities(self, indices, errors, offset=0.1):
