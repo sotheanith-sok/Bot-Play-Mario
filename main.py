@@ -11,7 +11,11 @@ env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
 
 # Recoder video for every 10 episodes
 env = Monitor(
-    env, "./data/video", resume=True, video_callable=lambda episode_id: episode_id % 10 == 0, uid=time.time()
+    env,
+    "./data/video",
+    resume=True,
+    video_callable=lambda episode_id: episode_id % 10 == 0,
+    uid=time.time(),
 )
 
 # How many episodes to play
@@ -40,36 +44,37 @@ scores = []
 # Some variable
 learnEvery = 4  # Keep track of how many frame between each time agent learn
 rememberEvery = 4  # How many frame between each time agent remember
-frame_skip = 4  # Only getting new action every 4 frame
+frame_skip = 4  # Only getting new action every X frame
 
 # Start playing
 for i in range(n_games):
 
     done = False
     score = 0
-    oberservation = cv2.resize(
-        env.reset() / 255.0, (128, 112)
-    )  # Scale rgb to between 0 and 1 and resize frame
     frame_counter = 0
 
-    # action = agent.choose_action(oberservation)
+    # Scale rgb to between 0 and 1 and resize frame
+    oberservation = cv2.resize(env.reset() / 255.0, (128, 112))
+
     while not done:
-        # Get new actions per skip
+        # Get new actions per X frames skip
         if frame_counter % frame_skip == 0:
             action = agent.choose_action(oberservation)
 
         # Time Step
         new_oberservation, reward, done, _ = env.step(action)
+
         # Scale rgb to between 0 and 1 and resize frame
         new_oberservation = cv2.resize(new_oberservation / 255.0, (128, 112))
         score += reward
 
-        # Agent only remember 1 frame for every 10 frame
+        # Agent will remember every X frames
         if frame_counter % rememberEvery == 0:
             agent.remember(oberservation, action, reward, new_oberservation, done)
 
         oberservation = new_oberservation
-        # Agent will learn every 300 frame
+
+        # Agent will learn every X frames
         if frame_counter % learnEvery == 0:
             agent.learn()
 
@@ -86,10 +91,10 @@ for i in range(n_games):
         "Loss: %.15f" % agent.loss,
     )
 
+    # Write scores to disk
     with open("./data/performance_file.bin", "ab+") as performance_file:
         pickle.dump([score, avg_score, agent.epsilon], performance_file)
+
     # Save model every 10 episodes
     if i % 10 == 0 and i > 0:
         agent.save_model()
-
-    # Write scores to disk

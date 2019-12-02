@@ -83,7 +83,7 @@ class DDQAgent(object):
             state {array} -- [Current observation]
         
         Returns:
-            [arry] -- [action]
+            [array] -- [action]
         """
         rand = np.random.random_sample()
         state = state[np.newaxis, :]
@@ -140,9 +140,9 @@ class DDQAgent(object):
                 + self.gamma * q_next[batch_index, max_actions.astype(int)] * dones
             )
 
+            #Calculate loss for each sample in a batch. This represent samples' priority.
             losses = []
             for i in range(self.batch_size):
-
                 t = self.q_evaluation.evaluate(
                     np.array([states[i]]),
                     np.array([q_target[i]]),
@@ -156,8 +156,10 @@ class DDQAgent(object):
                 states, q_target, verbose=0, sample_weight=importances
             )
 
+            #Get average loss per batch
             self.loss = History.history["loss"][0]
 
+            #Update priorities of training samples
             self.memory.set_priorities(indices, losses)
 
             # Update epsilon
@@ -243,12 +245,16 @@ class DDQAgent(object):
             return [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
     def save_parameters(self):
+        """Save hyperparameters onto disk
+        """
         with open("./data/hyperparameters.pkl", "wb") as f:
             pickle.dump(self.epsilon, f)
 
     def load_parameters(self):
+        """Attemp to load hyperparameters from disk
+        """
         if path.exists("./data/hyperparameters.pkl"):
             with open(
                 "./data/hyperparameters.pkl", "rb"
-            ) as f:  # Python 3: open(..., 'rb')
+            ) as f: 
                 self.epsilon = pickle.load(f)
