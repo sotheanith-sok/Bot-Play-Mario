@@ -39,8 +39,10 @@ agent = DDQAgent(
 agent.load_model()
 
 # Keep track of scores
-scores = []
+scores = [0.]
+good_run_score = [0.]
 
+temp_experience = []
 # Some variable
 learnEvery = 4  # Keep track of how many frame between each time agent learn
 rememberEvery = 4  # How many frame between each time agent remember
@@ -70,25 +72,42 @@ for i in range(n_games):
 
         # Agent will remember every X frames
         if frame_counter % rememberEvery == 0:
-            agent.remember(oberservation, action, reward, new_oberservation, done)
+            temp_experience.append(
+                (oberservation, action, reward, new_oberservation, done)
+            )
+            # agent.remember(oberservation, action, reward, new_oberservation, done)
 
         oberservation = new_oberservation
 
         # Agent will learn every X frames
-        if frame_counter % learnEvery == 0:
-            agent.learn()
+        # if frame_counter % learnEvery == 0:
+        #     agent.learn()
 
         frame_counter += 1
 
+    train = False
+    if score >= np.mean(good_run_score):
+        train = True
+        good_run_score.append(score)
+        for (oberservation, action, reward, new_oberservation, done) in temp_experience:
+            agent.remember(oberservation, action, reward, new_oberservation, done)
+            agent.learn()
+
     scores.append(score)
-    avg_score = np.mean(scores[max(0, i - 100) : i + 1])
+    avg_score = np.mean(scores)
+    avg_good_run_score = np.mean(good_run_score)
+    temp_experience.clear()
+
     print(
         "Episode:",
         i,
         "score: %.8f" % score,
         "Average score: %.8f" % avg_score,
+        "Average good run score: %.8f" % avg_good_run_score,
         "Epsilon: %.8f" % agent.epsilon,
         "Loss: %.15f" % agent.loss,
+        "Train: ",
+        train,
     )
 
     # Write scores to disk

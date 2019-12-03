@@ -258,3 +258,4 @@ class DDQAgent(object):
                 "./data/hyperparameters.pkl", "rb"
             ) as f: 
                 self.epsilon = pickle.load(f)
+                self.epsilon =0.5
