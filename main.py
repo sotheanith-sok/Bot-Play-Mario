@@ -85,7 +85,7 @@ for i in range(n_games):
         frame_counter += 1
 
     train = False
-    if score >= 0:
+    if score >= np.mean(scores):
         train = True
         for (oberservation, action, reward, new_oberservation, done) in temp_experience:
             agent.remember(oberservation, action, reward, new_oberservation, done)
