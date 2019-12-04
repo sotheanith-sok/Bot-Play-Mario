@@ -7,7 +7,7 @@ import pickle
 import time
 
 # Build game enviroment
-env = retro.make(game="SuperMarioWorld-Snes", state="YoshiIsland1")
+env = retro.make(game="SuperMarioWorld-Snes", state="Start")
 
 # Recoder video for every 10 episodes
 env = Monitor(
@@ -27,9 +27,9 @@ agent = DDQAgent(
     gamma=0.95,  # Discount factor. Make future event weighted less
     n_actions=8,  # Number of possible actions. 2^8 for 8 inputs
     epsilon=1.0,  # How often should agent "explore" (Do random action). Set to 0 for well train model
-    epsilon_dec=0.999999,  # How fast should start perform greedy action
+    epsilon_dec=0.99999,  # How fast should start perform greedy action
     epsilon_min=0.1,
-    batch_size=64,  # How many samples should this agent train on
+    batch_size=32,  # How many samples should this agent train on
     input_dimension=(112, 128, 3),  # Input dimension.
     memory_size=25000,  # Max capacity of ReplayBuffer
 )
@@ -85,7 +85,7 @@ for i in range(n_games):
         frame_counter += 1
 
     train = False
-    if score >= np.mean(scores):
+    if score >= 0:
         train = True
         for (oberservation, action, reward, new_oberservation, done) in temp_experience:
             agent.remember(oberservation, action, reward, new_oberservation, done)

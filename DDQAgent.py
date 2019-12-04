@@ -110,7 +110,8 @@ class DDQAgent(object):
             states, actions, rewards, new_states, dones, importances, indices = self.memory.sample_buffer(
                 self.batch_size,
                 priority_scale=0.7,
-                probabilities_scale=1.0 - ((self.epsilon - self.epsilon_min) / (1 - self.epsilon_min))
+                probabilities_scale=1.0
+                - ((self.epsilon - self.epsilon_min) / (1 - self.epsilon_min)),
             )
             actions_value = np.array(self.actions_space, dtype=np.int8)
 
@@ -140,7 +141,7 @@ class DDQAgent(object):
                 + self.gamma * q_next[batch_index, max_actions.astype(int)] * dones
             )
 
-            #Calculate loss for each sample in a batch. This represent samples' priority.
+            # Calculate loss for each sample in a batch. This represent samples' priority.
             losses = []
             for i in range(self.batch_size):
                 t = self.q_evaluation.evaluate(
@@ -156,10 +157,10 @@ class DDQAgent(object):
                 states, q_target, verbose=0, sample_weight=importances
             )
 
-            #Get average loss per batch
+            # Get average loss per batch
             self.loss = History.history["loss"][0]
 
-            #Update priorities of training samples
+            # Update priorities of training samples
             self.memory.set_priorities(indices, losses)
 
             # Update epsilon
@@ -224,6 +225,29 @@ class DDQAgent(object):
         elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]):
             return 7  # Spin Jump Right
 
+        # if np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+        #     return 0  # Doing nothing
+        # elif np.array_equal(raw_input, [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+        #     return 1  # Run right
+        # elif np.array_equal(raw_input, [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]):
+        #     return 2  # Run left
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]):
+        #     return 3  # down
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]):
+        #     return 4  # Jump
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]):
+        #     return 5  # Spin Jump
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]):
+        #     return 6  # Jump Right
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]):
+        #     return 7
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]):
+        #     return 8
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]):
+        #     return 9
+        # elif np.array_equal(raw_input, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]):
+        #     return 10
+
     def decode_game_input(self, value):
         """Decompress input back to its original form
         """
@@ -244,6 +268,29 @@ class DDQAgent(object):
         elif value == 7:
             return [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]
 
+        # if value == 0:
+        #     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # elif value == 1:
+        #     return [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # elif value == 2:
+        #     return [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        # elif value == 3:
+        #     return [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+        # elif value == 4:
+        #     return [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+        # elif value == 5:
+        #     return [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        # elif value == 6:
+        #     return [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+        # elif value == 7:
+        #     return [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+        # elif value == 8:
+        #     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+        # elif value == 9:
+        #     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+        # elif value == 10:
+        #     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
     def save_parameters(self):
         """Save hyperparameters onto disk
         """
@@ -254,8 +301,6 @@ class DDQAgent(object):
         """Attemp to load hyperparameters from disk
         """
         if path.exists("./data/hyperparameters.pkl"):
-            with open(
-                "./data/hyperparameters.pkl", "rb"
-            ) as f: 
+            with open("./data/hyperparameters.pkl", "rb") as f:
                 self.epsilon = pickle.load(f)
-                self.epsilon =0.2
+                # self.epsilon =0.1
