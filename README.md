@@ -8,7 +8,7 @@ An implementation of Deep Q Learning to train Mario to complete a level of Super
  - [TensorFlow](https://www.tensorflow.org/)
  
 ## Authors
- - [Sotheanith Sok](https://github.com/sotheanith)
+ - [Sotheanith Sok](https://github.com/sotheanith-sok)
  - [Yashua Ovando](https://github.com/ydovando)
  - [Alex Pham](https://github.com/alexpham095)
  - [Sella Bae](https://github.com/sellabae)
